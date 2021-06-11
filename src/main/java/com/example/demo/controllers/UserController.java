@@ -55,15 +55,18 @@ public class UserController {
     public ResponseEntity<User> getUserProfile(HttpServletRequest request) throws ResourceNotFoundException {
         String headerAuth = request.getHeader("Authorization");
         String jwt = "";
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            jwt = headerAuth.substring(7, headerAuth.length());
+        if (StringUtils.hasText(headerAuth)) {
+            if (headerAuth.startsWith("Bearer ")) {
+                jwt = headerAuth.substring(7, headerAuth.length());
+            } else {
+                jwt = headerAuth;
+            }
         }
         if (!jwtUtils.validateJwtToken(jwt)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String username = jwtUtils.getUserNameFromJwtToken(jwt);
-        User user = userRepository.findByUsernameAndDeleteAt(username, null)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user = userRepository.findByUsernameAndDeleteAt(username, null);
         return ResponseEntity.ok().body(user);
     }
 
@@ -74,15 +77,18 @@ public class UserController {
         var response = new ResponseForm();
         String headerAuth = request.getHeader("Authorization");
         String jwt = "";
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            jwt = headerAuth.substring(7, headerAuth.length());
+        if (StringUtils.hasText(headerAuth)) {
+            if (headerAuth.startsWith("Bearer ")) {
+                jwt = headerAuth.substring(7, headerAuth.length());
+            } else {
+                jwt = headerAuth;
+            }
         }
         if (!jwtUtils.validateJwtToken(jwt)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String username = jwtUtils.getUserNameFromJwtToken(jwt);
-        User user = userRepository.findByUsernameAndDeleteAt(username, null)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user = userRepository.findByUsernameAndDeleteAt(username, null);
 
         response.succeed = user.updateInfo(userDetails);
         if (response.succeed.equals(true)) {
@@ -121,15 +127,18 @@ public class UserController {
         var response = new ResponseForm();
         String headerAuth = request.getHeader("Authorization");
         String jwt = "";
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            jwt = headerAuth.substring(7, headerAuth.length());
+        if (StringUtils.hasText(headerAuth)) {
+            if (headerAuth.startsWith("Bearer ")) {
+                jwt = headerAuth.substring(7, headerAuth.length());
+            } else {
+                jwt = headerAuth;
+            }
         }
         if (!jwtUtils.validateJwtToken(jwt)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String username = jwtUtils.getUserNameFromJwtToken(jwt);
-        User user = userRepository.findByUsernameAndDeleteAt(username, null)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found on"));
+        User user = userRepository.findByUsernameAndDeleteAt(username, null);
         user.setDeleteAt(new java.util.Date());
         userRepository.save(user);
         response.succeed = true;

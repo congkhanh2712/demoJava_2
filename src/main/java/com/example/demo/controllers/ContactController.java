@@ -53,35 +53,40 @@ public class ContactController {
     public ResponseEntity<List<Contact>> getContactList(HttpServletRequest request) throws ResourceNotFoundException {
         String headerAuth = request.getHeader("Authorization");
         String jwt = "";
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            jwt = headerAuth.substring(7, headerAuth.length());
+        if (StringUtils.hasText(headerAuth)) {
+            if (headerAuth.startsWith("Bearer ")) {
+                jwt = headerAuth.substring(7, headerAuth.length());
+            } else {
+                jwt = headerAuth;
+            }
         }
         if (!jwtUtils.validateJwtToken(jwt)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String username = jwtUtils.getUserNameFromJwtToken(jwt);
-        User user = userRepository.findByUsernameAndDeleteAt(username,null)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user = userRepository.findByUsernameAndDeleteAt(username, null);
         List<Contact> contact = contactRepository.findByUserIdAndDeleteAt(user, null);
         return ResponseEntity.ok().body(contact);
     }
 
-     
     @PostMapping("/add")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ResponseForm> create(HttpServletRequest request, @RequestBody Contact x)
             throws ResourceNotFoundException {
         String headerAuth = request.getHeader("Authorization");
         String jwt = "";
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            jwt = headerAuth.substring(7, headerAuth.length());
+        if (StringUtils.hasText(headerAuth)) {
+            if (headerAuth.startsWith("Bearer ")) {
+                jwt = headerAuth.substring(7, headerAuth.length());
+            } else {
+                jwt = headerAuth;
+            }
         }
         if (!jwtUtils.validateJwtToken(jwt)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String username = jwtUtils.getUserNameFromJwtToken(jwt);
-        User user = userRepository.findByUsernameAndDeleteAt(username, null)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user = userRepository.findByUsernameAndDeleteAt(username, null);
         Contact contact = contactRepository.findByEmailAndUserIdAndDeleteAt(x.getEmail(), user, null);
         if (contact == null) {
             x.setUserid(user);
@@ -106,8 +111,12 @@ public class ContactController {
         String jwt = "";
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new ResourceNotFoundException("Contact not found on:" + contactId));
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            jwt = headerAuth.substring(7, headerAuth.length());
+        if (StringUtils.hasText(headerAuth)) {
+            if (headerAuth.startsWith("Bearer ")) {
+                jwt = headerAuth.substring(7, headerAuth.length());
+            } else {
+                jwt = headerAuth;
+            }
         }
         if (!jwtUtils.validateJwtToken(jwt)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -141,8 +150,12 @@ public class ContactController {
         String jwt = "";
         Contact contact = contactRepository.findByIdAndDeleteAt(contactId, null)
                 .orElseThrow(() -> new ResourceNotFoundException("Contact not found on: " + contactId));
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            jwt = headerAuth.substring(7, headerAuth.length());
+        if (StringUtils.hasText(headerAuth)) {
+            if (headerAuth.startsWith("Bearer ")) {
+                jwt = headerAuth.substring(7, headerAuth.length());
+            } else {
+                jwt = headerAuth;
+            }
         }
         if (!jwtUtils.validateJwtToken(jwt)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

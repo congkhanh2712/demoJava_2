@@ -28,6 +28,7 @@ import com.example.demo.message.response.auth.LoginResponse;
 import java.util.HashSet;
 import java.util.Set;
 
+
 import javax.servlet.http.HttpServletRequest;
 
 import com.example.demo.entities.ERole;
@@ -64,13 +65,14 @@ public class AuthController {
      * @return User
      */
     @PostMapping("/signin")
-    public ResponseEntity<LoginResponse> signIn(@RequestBody LoginForm u){
+    public ResponseEntity<LoginResponse> signIn(@RequestBody LoginForm u) {
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(u.getUsername(), u.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
-
-        return ResponseEntity.ok().body(new LoginResponse(true, "Đăng nhập thành công", jwt));
+        String username = jwtUtils.getUserNameFromJwtToken(jwt);
+        User user = userRepository.findByUsernameAndDeleteAt(username, null);
+        return ResponseEntity.ok().body(new LoginResponse(true, "Đăng nhập thành công", jwt, user.getRoles()));
     }
 
     /**
@@ -80,7 +82,7 @@ public class AuthController {
      * @return response
      */
     @PostMapping("/signup")
-    public ResponseEntity<ResponseForm> create(@RequestBody SignUpForm x){
+    public ResponseEntity<ResponseForm> create(@RequestBody SignUpForm x) {
         if (userRepository.existsByUsername(x.getUsername()).equals(true)) {
             return ResponseEntity.ok().body(new ResponseForm(false, "Error: Username is already taken! "));
         }
@@ -98,21 +100,23 @@ public class AuthController {
 
     @PutMapping("/changepassword")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<ResponseForm> update(HttpServletRequest request, @RequestBody ChangePassword u)
-            throws ResourceNotFoundException {
+    public ResponseEntity<ResponseForm> update(HttpServletRequest request, @RequestBody ChangePassword u) {
         String headerAuth = request.getHeader("Authorization");
         String jwt = "";
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            jwt = headerAuth.substring(7, headerAuth.length());
+        if (StringUtils.hasText(headerAuth)) {
+            if (headerAuth.startsWith("Bearer ")) {
+                jwt = headerAuth.substring(7, headerAuth.length());
+            } else {
+                jwt = headerAuth;
+            }
         }
         if (!jwtUtils.validateJwtToken(jwt)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String username = jwtUtils.getUserNameFromJwtToken(jwt);
         var response = new ResponseForm();
-        User user = userRepository.findByUsernameAndDeleteAt(username, null)
-                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
-        if (user != null && user.getDeleteAt() == null) {
+        User user = userRepository.findByUsernameAndDeleteAt(username, null);
+        if (user != null) {
             BCrypt.Result result = BCrypt.verifyer().verify(u.getPassword().toCharArray(), user.getPassword());
             if (result.verified) {
                 user.setPassword(u.getNewpass());

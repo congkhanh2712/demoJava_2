@@ -5,7 +5,6 @@ import org.springframework.stereotype.Repository;
 
 import javassist.expr.Instanceof;
 
-import java.util.Optional;
 
 import com.example.demo.entities.User;
 
@@ -19,6 +18,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return User
      */
     public User findByUsernameAndPasswordAndDeleteAt(String username, String password, Instanceof a);
-    public Optional<User> findByUsernameAndDeleteAt(String username, Instanceof a);
+    public User findByUsernameAndDeleteAt(String username, Instanceof a);
     Boolean existsByUsername(String username);
 }
